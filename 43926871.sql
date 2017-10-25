@@ -66,34 +66,32 @@
 
 -- c)
 	CREATE OR REPLACE TRIGGER "TR_SERVICE_HISTORY_MESSAGE"
-		BEFORE INSERT OR UPDATE ON SERVICE_HISTORY
-		FOR EACH ROW
+	BEFORE INSERT ON SERVICE_HISTORY
+	FOR EACH ROW
 	BEGIN
-		SET :NEW.MESSAGE = CASE :NEW.FINISHED
-		WHEN 'T' THEN 
-			(SELECT 'Hi ' 
-				|| C.F_NAME || ' ' 
-				|| C.L_NAME || ", your dog "
-				|| D.DOG_NAME || ' of breed: ' 
+		IF :NEW.FINISHED = 'T' THEN 
+		   SELECT 'Hi '
+				|| C.F_NAME || ' '
+				|| C.L_NAME || ', your dog '
+				|| D.DOG_NAME || ' of breed: '
 				|| D.DOG_BREED || ' is ready for pick up at '
-				|| S.STORE_AREA || "." 
+				|| S.STORE_AREA || '.'  
+			INTO :NEW.MESSAGE
 			FROM CUSTOMERS C, DOGS D, STORES S
-			WHERE C.C_ID = D.C_ID 
+			WHERE C.C_ID = D.C_ID
 				AND :NEW.STORE_ID = S.STORE_ID
-				AND :NEW.DOG_ID   = D.DOG_ID
-			)
-		WHEN 'F' THEN 
-			(SELECT 'Hi ' 
+				AND :NEW.DOG_ID   = D.DOG_ID;
+		ELSE 
+			SELECT 'Hi ' 
 				|| C.F_NAME || ' ' 
-				|| C.L_NAME || ", your dog "
+				|| C.L_NAME || ', your dog '
 				|| D.DOG_NAME || ' of breed: ' 
-				|| D.DOG_BREED || ' is not ready to be picked up yet.'
-			FROM CUSTOMERS C, DOGS D
-			WHERE C.C_ID = D.C_ID 
-				AND :NEW.DOG_ID   = D.DOG_ID
-			)
-
-		ELSE :NEW.MESSAGE
+				|| D.DOG_BREED|| ' is not ready to be picked up yet.' 
+			INTO :NEW.MESSAGE
+			FROM CUSTOMERS C, DOGS D, STORES S
+			WHERE C.C_ID = D.C_ID
+				AND :NEW.DOG_ID = D.DOG_ID;
+		END IF;
 	END;
 	/
 
@@ -110,7 +108,7 @@
 
 -- a)
 	CREATE VIEW "V_DOG_BREED_STATISTICS" AS
-	SELECT D.DOG_BREED, SUM(S.PRICE), AVG(S.PRICE), STDEVP(S.PRICE)
+	SELECT D.DOG_BREED, SUM(S.PRICE) as TOTAL, AVG(S.PRICE) as MEAN, STDDEV(S.PRICE) as STANDARD_DEVIATION
 	FROM DOGS D, SERVICE_HISTORY SH, SERVICE_HISTORY_DETAIL SHD, SERVICES S
 	WHERE D.DOG_ID = SH.DOG_ID 
 		AND SH.SERVICE_ID = SHD.SERVICE_ID 
@@ -121,7 +119,7 @@
 	CREATE MATERIALIZED VIEW "MV_DOG_BREED_STATISTICS" 
 	BUILD IMMEDIATE 
 	AS
-	SELECT D.DOG_BREED, SUM(S.PRICE), AVG(S.PRICE), STDEVP(S.PRICE)
+	SELECT D.DOG_BREED, SUM(S.PRICE) as TOTAL, AVG(S.PRICE) as MEAN, STDDEV(S.PRICE) as STANDARD_DEVIATION
 	FROM DOGS D, SERVICE_HISTORY SH, SERVICE_HISTORY_DETAIL SHD, SERVICES S
 	WHERE D.DOG_ID = SH.DOG_ID 
 		AND SH.SERVICE_ID = SHD.SERVICE_ID 
@@ -141,7 +139,7 @@
 
 -- a)
 	-- Construct a query to find the longest time to perform a Dental Checkup on a dog, together with information about the dog that received that checkup (i.e., DOG_ID and DOG_NAME) as well as the store where that checkup took place.
-	SELECT D.DOG_ID, D.DOG_NAME, MAX((SELECT SH.END_TIME - SH.START_TIME FROM DUAL)), T.STORE_AREA
+	SELECT D.DOG_ID, D.DOG_NAME, MAX(SH.END_TIME - SH.START_TIME), T.STORE_AREA
 	FROM DOGS D, SERVICE_HISTORY SH, SERVICE_HISTORY_DETAIL SHD, SERVICES S, STORES T
 	WHERE D.DOG_ID = SH.DOG_ID 
 		AND SH.SERVICE_ID = SHD.SERVICE_ID 
