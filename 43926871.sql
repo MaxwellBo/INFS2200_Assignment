@@ -219,6 +219,4 @@
 
 	SELECT HEIGHT, LF_BLKS, BLKS_GETS_PER_ACCESS FROM INDEX_STATS;
 
-	SELECT BLOCKS, GLOBAL_STATS, USER_STATS FROM USER_TABLES WHERE TABLE_NAME = 'STORES'
-
 --#############################################################################
