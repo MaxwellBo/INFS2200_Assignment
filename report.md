@@ -3,7 +3,7 @@
 ## Details
 - **Student Number**: 43926871
 - **Student Name**: Maxwell Bo
-- **DOG_ID**: TODO
+- **DOG_ID**: 988
 
 ## Task 1: Constraints
 
@@ -300,9 +300,8 @@ Materialized view created.
 
 ### c)
 
-```
-TODO
-```
+![SELECT * FROM V_DOG_BREED_STATISTICS](3ca.png)
+![SELECT * FROM MV_DOG_BREED_STATISTICS](3cb.png)
 
 TODO EXPLANATION
 
@@ -311,21 +310,20 @@ TODO EXPLANATION
 
 ### a)
 
-```
-TODO
-```
+![Before index](4a.png)
+
 
 ### b)
 
 ```
-TODO
+SQL> CREATE INDEX "IDX_SERVICE_TIME" ON SERVICE_HISTORY_DETAIL(END_TIME - START_TIME);
+
+Index created.
 ```
 
 ### c)
 
-```
-DUPE OF A
-```
+![After index](4c.png)
 
 TODO EXPLANATION
 
@@ -333,21 +331,19 @@ TODO EXPLANATION
 
 ### a)
 
-```
-TODO
-```
+![Before index](5a.png)
 
 ### b)
 
 ```
-TODO
+SQL> CREATE BITMAP INDEX "BIDX_SERVICE" ON SERVICE_HISTORY_DETAIL(SERVICE_NAME);
+
+Index created.
 ```
 
 ### c)
 
-```
-DUPE OF A
-```
+![After index](5c.png)
 
 TODO EXPLANATION
 
@@ -360,7 +356,15 @@ TODO EXPLANATION
 ### a)
 
 ```
-TODO
+SQL> SELECT
+  2  GET_UNIQUE_SNUMBER(43926871) FROM
+  3  DUAL;
+
+GET_UNIQUE_SNUMBER(43926871)
+----------------------------
+                         988
+
+Elapsed: 00:00:00.01
 ```
 
 ### b)
