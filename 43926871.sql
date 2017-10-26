@@ -138,7 +138,6 @@
 -- Task 4: Function Based Indexes
 
 -- a)
-	-- Construct a query to find the longest time to perform a Dental Checkup on a dog, together with information about the dog that received that checkup (i.e., DOG_ID and DOG_NAME) as well as the store where that checkup took place.
 	SELECT D.DOG_ID, D.DOG_NAME, DENTAL_CHECKUPS.DIFFERENCE, T.STORE_AREA
 	FROM
 		(SELECT SHD.SERVICE_ID, MAX(SHD.END_TIME - SHD.START_TIME) AS DIFFERENCE
@@ -156,6 +155,18 @@
 	CREATE INDEX "IDX_SERVICE_TIME" ON SERVICE_HISTORY_DETAIL(END_TIME - START_TIME);
 
 -- c) Note this question also has an explanation component. 
+	SELECT D.DOG_ID, D.DOG_NAME, DENTAL_CHECKUPS.DIFFERENCE, T.STORE_AREA
+	FROM
+		(SELECT SHD.SERVICE_ID, MAX(SHD.END_TIME - SHD.START_TIME) AS DIFFERENCE
+		FROM SERVICE_HISTORY_DETAIL SHD, SERVICES S
+		WHERE SHD.SERVICE_NAME = 'Dental Checkup'
+		GROUP BY SHD.SERVICE_ID) DENTAL_CHECKUPS, 
+	SERVICE_HISTORY SH, STORES T, DOGS D
+	WHERE DENTAL_CHECKUPS.SERVICE_ID = SH.SERVICE_ID
+		AND SH.STORE_ID = T.STORE_ID
+		AND SH.DOG_ID = D.DOG_ID
+	ORDER BY DENTAL_CHECKUPS.DIFFERENCE DESC
+	FETCH FIRST 1 ROW ONLY;
 
 --#############################################################################
 
